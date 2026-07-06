@@ -1,0 +1,260 @@
+{
+  "name": "birthday wish automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "={{ 1 }}"
+            },
+            {
+              "triggerAtHour": 19,
+              "triggerAtMinute": 59
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3cd722a5-497e-4adb-87ba-9891e2599a76",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rRKXUHvWczMgt46X4sLwG-HnHEdxYpIFqqbeyfs9J6s",
+          "mode": "list",
+          "cachedResultName": "Birthday Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rRKXUHvWczMgt46X4sLwG-HnHEdxYpIFqqbeyfs9J6s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rRKXUHvWczMgt46X4sLwG-HnHEdxYpIFqqbeyfs9J6s/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "762c7be9-7ea7-4cd4-b05b-ff6cf133fee7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "nyvTwNrm9TPLVVqa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b1a04459-6f22-4307-a43b-239563075649",
+              "leftValue": "={{ $json.DOB.substring(5,10) }}",
+              "rightValue": "={{ $now.setZone('Asia/Kolkata').toFormat('MM-dd') }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "21d87627-ebdf-44d3-8792-b73ada76e70f",
+              "leftValue": "={{ $json[\"Wish Sent\"] }}",
+              "rightValue": "No",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "b259de67-12d9-4b0e-abaf-193a21d8258d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b5582aab-8a90-4947-9057-995889991152",
+              "name": "Name",
+              "value": "={{ $('Get row(s) in sheet').item.json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "e05bbb6e-1fbf-42da-9b48-13e1018635a7",
+              "name": "Email",
+              "value": "={{ $('Get row(s) in sheet').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "0c20ffd0-0381-44c1-a49c-9a955666c606",
+              "name": "DOB",
+              "value": "={{ $('Get row(s) in sheet').item.json.DOB }}",
+              "type": "string"
+            },
+            {
+              "id": "d4a2a66d-fd28-4ff3-be9c-4ab7c171264a",
+              "name": "Wish Sent",
+              "value": "={{ $('Get row(s) in sheet').item.json['Wish Sent'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "652a8f23-c6d2-4088-8fab-6abb8f8754bf",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const name = item.json.Name;\n\n  item.json.message = `Happy Birthday ${name}! 🎂🎉\n\ndffa ho hun chl\n\nBest Wishes from Jannat`;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "00baa731-39f8-4ceb-8d08-41d186779847",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=Happy Birthday {{ $json.Name }} 🎂",
+        "emailType": "text",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "7f235b87-a6fa-4a48-95d5-2972dc63575e",
+      "name": "Send a message",
+      "webhookId": "e6c69cd6-9c09-479c-8d1c-9816a7453e5e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4deJ0FsJ3rnI0iMk",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ab9a3520-c90a-4025-8360-78c1c7eca558",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3da4aa938db170e6ba7a028570d9c9069fa7f43bc53480b507bc25ca4b3372c5"
+  },
+  "id": "bsSLFJyDUIIL3aQl",
+  "tags": []
+}
